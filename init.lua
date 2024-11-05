@@ -1,4 +1,4 @@
---[[
+--[[((((((((((()))))))))))
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -167,6 +167,16 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+vim.diagnostic.config {
+  float = {
+    source = true,      -- Always show the source of the diagnostic (e.g., rubocop)
+    border = 'rounded', -- Optionally, set a border style for clarity
+    width = 200,
+  },
+}
+
+vim.keymap.set('n', '<leader>dl', vim.diagnostic.open_float,
+  { noremap = true, silent = true, desc = 'Show diagnostics for current line' })
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -190,6 +200,14 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Option + hjkl to move lines up and down
+vim.api.nvim_set_keymap('n', '<A-j>', ':m .+1<CR>==', { silent = true, noremap = true })
+vim.api.nvim_set_keymap('n', '<A-k>', ':m .-2<CR>==', { silent = true, noremap = true })
+vim.api.nvim_set_keymap('v', '<A-j>', ":m '>+1<CR>gv=gv", { silent = true, noremap = true })
+vim.api.nvim_set_keymap('v', '<A-k>', ":m '<-2<CR>gv=gv", { silent = true, noremap = true })
+
+vim.keymap.set('c', '%%', "<c-r>=expand('%:h').'/'<CR>", { silent = true, noremap = true })
+--
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -201,6 +219,31 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+-- Auto save buffers when they are edited
+vim.api.nvim_create_autocmd({ 'TextChanged', 'InsertLeave' }, {
+  desc = 'Automatically save the buffer when modified',
+  pattern = '*',
+  command = 'silent! w',
+})
+
+-- Autocommand to switch line numbers to absolute in insert mode
+vim.api.nvim_create_autocmd('InsertEnter', {
+  desc = 'Switch to absolute line numbers in insert mode',
+  pattern = '*',
+  callback = function()
+    vim.opt.relativenumber = false
+  end,
+})
+
+-- Autocommand to switch back to relative line numbers when leaving insert mode
+vim.api.nvim_create_autocmd('InsertLeave', {
+  desc = 'Switch back to relative line numbers in normal mode',
+  pattern = '*',
+  callback = function()
+    vim.opt.relativenumber = true
   end,
 })
 
@@ -253,23 +296,47 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      current_line_blame = true,
     },
   },
 
   {
-    "NeogitOrg/neogit",
+    'NeogitOrg/neogit',
     dependencies = {
-      "nvim-lua/plenary.nvim",  -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
+      'nvim-lua/plenary.nvim',  -- required
+      'sindrets/diffview.nvim', -- optional - Diff integration
 
       -- Only one of these is needed.
-      "nvim-telescope/telescope.nvim", -- optional
-      "ibhagwan/fzf-lua",              -- optional
-      "echasnovski/mini.pick",         -- optional
+      'nvim-telescope/telescope.nvim', -- optional
+      'ibhagwan/fzf-lua',              -- optional
+      'echasnovski/mini.pick',         -- optional
     },
-    config = true
+    config = true,
+    keys = {
+      {
+        '<leader>gg',
+        function()
+          require('neogit').open()
+        end,
+        noremap = true,
+        silent = true,
+        desc = 'Open Neogit default',
+      },
+    },
   },
 
+  {
+    'akinsho/git-conflict.nvim',
+    version = '*',
+    config = true,
+    keys = { '<leader>cl', '<cmd>GitConflictListQf<CR>', noremap = true, silent = true, desc = 'List Git conflicts in quickfix' },
+  },
+
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {},
+  },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -402,7 +469,11 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          find_files = {
+            hidden = true, --This enables showing hidden files
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -626,6 +697,10 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      local mason_registry = require 'mason-registry'
+      local lsp_path = mason_registry.is_installed 'ruby_lsp' and
+      mason_registry.get_package('ruby_lsp'):get_install_path() .. '/ruby-lsp' or 'ruby-lsp'
+
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -654,7 +729,7 @@ require('lazy').setup({
             },
           },
         },
-        ruby_lsp = {},
+        ruby_lsp = { cmd = { lsp_path } },
       }
 
       -- Ensure the servers and tools above are installed
