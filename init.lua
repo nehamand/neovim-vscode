@@ -169,14 +169,13 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 
 vim.diagnostic.config {
   float = {
-    source = true,      -- Always show the source of the diagnostic (e.g., rubocop)
+    source = true, -- Always show the source of the diagnostic (e.g., rubocop)
     border = 'rounded', -- Optionally, set a border style for clarity
     width = 200,
   },
 }
 
-vim.keymap.set('n', '<leader>dl', vim.diagnostic.open_float,
-  { noremap = true, silent = true, desc = 'Show diagnostics for current line' })
+vim.keymap.set('n', '<leader>dl', vim.diagnostic.open_float, { noremap = true, silent = true, desc = 'Show diagnostics for current line' })
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -273,7 +272,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-
+  'github/copilot.vim',
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -303,13 +302,13 @@ require('lazy').setup({
   {
     'NeogitOrg/neogit',
     dependencies = {
-      'nvim-lua/plenary.nvim',  -- required
+      'nvim-lua/plenary.nvim', -- required
       'sindrets/diffview.nvim', -- optional - Diff integration
 
       -- Only one of these is needed.
       'nvim-telescope/telescope.nvim', -- optional
-      'ibhagwan/fzf-lua',              -- optional
-      'echasnovski/mini.pick',         -- optional
+      'ibhagwan/fzf-lua', -- optional
+      'echasnovski/mini.pick', -- optional
     },
     config = true,
     keys = {
@@ -337,6 +336,15 @@ require('lazy').setup({
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
     opts = {},
   },
+  {
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
+  },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -353,7 +361,7 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  {                     -- Useful plugin to show you pending keybinds.
+  { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
@@ -396,7 +404,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       spec = {
-        { '<leader>c', group = '[C]ode',     mode = { 'n', 'x' } },
+        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]ocument' },
         { '<leader>r', group = '[R]ename' },
         { '<leader>s', group = '[S]earch' },
@@ -436,7 +444,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -497,7 +505,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
-
+      vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, silent = true })
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
@@ -536,7 +544,7 @@ require('lazy').setup({
       },
     },
   },
-  { 'Bilal2453/luvit-meta',     lazy = true },
+  { 'Bilal2453/luvit-meta', lazy = true },
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -548,7 +556,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim',       opts = {} },
+      { 'j-hui/fidget.nvim', opts = {} },
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
@@ -707,8 +715,7 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local mason_registry = require 'mason-registry'
-      local lsp_path = mason_registry.is_installed 'ruby_lsp' and
-      mason_registry.get_package('ruby_lsp'):get_install_path() .. '/ruby-lsp' or 'ruby-lsp'
+      local lsp_path = mason_registry.is_installed 'ruby_lsp' and mason_registry.get_package('ruby_lsp'):get_install_path() .. '/ruby-lsp' or 'ruby-lsp'
 
       local servers = {
         -- clangd = {},
@@ -723,6 +730,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        tailwindcss = {},
 
         lua_ls = {
           -- cmd = {...},
@@ -806,6 +814,11 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        ruby = { 'rubocop' },
+        javascript = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .js files
+        typescript = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .ts files
+        javascriptreact = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .jsx files
+        typescriptreact = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .tsx files
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
