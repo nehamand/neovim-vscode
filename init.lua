@@ -717,7 +717,7 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local mason_registry = require 'mason-registry'
-      local lsp_path = mason_registry.is_installed 'ruby_lsp' and mason_registry.get_package('ruby_lsp'):get_install_path() .. '/ruby-lsp' or 'ruby-lsp'
+      -- local lsp_path = mason_registry.is_installed 'ruby_lsp' and mason_registry.get_package('ruby_lsp'):get_install_path() .. '/ruby-lsp' or 'ruby-lsp'
 
       local servers = {
         -- clangd = {},
@@ -732,7 +732,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-        tailwindcss = {},
+        -- tailwindcss = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -748,7 +748,7 @@ require('lazy').setup({
             },
           },
         },
-        ruby_lsp = { cmd = { lsp_path } },
+        ruby_lsp = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -816,7 +816,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        ruby = { 'rubocop' },
+        ruby = { 'rubyfmt' },
         javascript = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .js files
         typescript = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .ts files
         javascriptreact = { 'eslint_d', 'prettier' }, -- Use ESLint and Prettier for .jsx files
